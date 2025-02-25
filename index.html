@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Writing Paper with Tools</title>
+    <style>
+        /* General container styles for alignment */
+
+        /* Reset styles for the entire page */
+    html, body {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    #site-container {
+            max-width: 800px; /* Match the Google Site container width */
+            margin: 0 auto; /* Center content horizontally */
+            padding: 0;
+            border: none;
+            box-sizing: border-box;
+}
+
+        #line-container {
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    border: none; /* Ensure no borders are applied */
+    width: 100%; /* Full width for responsiveness */
+    max-width: 580px; /* Match canvas and lines */
+    height: 500px; /* Set height to match canvas */
+    box-sizing: border-box;
+}
+
+        .line {
+            width: 100%;
+            height: 2px;
+            max-width: 580px;
+        }
+
+        .line.solid {
+            background-color: #4a148c;
+        }
+
+        .line.dashed {
+            border-top: 2px dashed #FF0000; /* Dashed line in red */
+            margin: 0;
+        }
+
+        .yellow-gap, .white-gap {
+            width: 100%;
+            max-width: 580px;
+            height: 40px;
+            position: relative;
+        }
+
+        .yellow-gap {
+            background-color: #fff9c4;
+        }
+
+        .white-gap {
+            background-color: #f1f1f1;
+        }
+
+        #canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 10;
+    border: 1px solid #000; /* Optional border */
+    width: 100%; /* Match #line-container width */
+    height: 100%; /* Match #line-container height */
+    max-width: 580px; /* Same max-width as lines */
+    box-sizing: border-box; /* Include padding and border in size */
+}
+
+        #toolbar {
+            margin: 10px 0;
+            display: flex;
+            justify-content: center; /* Center the group */
+            gap: 8px; /* Space between buttons */
+            max-width: 580px;
+            margin: 0 auto;
+        }
+
+        button {
+            margin-right: 10px;
+            font-size: 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 10px;
+            position: relative;
+        }
+
+        button.active {
+            background-color: lightblue;
+            border-radius: 5px;
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        #toggle-eraser::after {
+            content: '';
+            display: inline-block;
+            width: 24px;
+            height: 12px;
+            background-color: pink;
+            border: 1px solid #000;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div id="site-container">
+        <div id="toolbar">
+            <button id="toggle-pencil" title="Pencil">&#9998;</button> <!-- Pencil Icon -->
+            <button id="toggle-eraser" title="Eraser"></button> <!-- Eraser Button -->
+            <button id="toggle-onoff" title="Toggle On/Off">&#128275;</button> <!-- Power Icon -->
+        </div>
+        <div id="line-container">
+            <canvas id="canvas" width="580" height="600"></canvas>
+            <div class="line solid"></div>
+            <div class="white-gap"></div>
+            <div class="yellow-gap">
+                <div class="line dashed"></div>
+            </div>
+            <div class="line solid"></div>
+            <div class="line solid"></div>
+            <div class="white-gap"></div>
+            <div class="yellow-gap">
+                <div class="line dashed"></div>
+            </div>
+            <div class="line solid"></div>
+            <div class="line solid"></div>
+            <div class="white-gap"></div>
+            <div class="yellow-gap">
+                <div class="line dashed"></div>
+            </div>
+            <div class="line solid"></div>
+            <div class="line solid"></div>
+            <div class="white-gap"></div>
+            <div class="yellow-gap">
+                <div class="line dashed"></div>
+            </div>
+            <div class="line solid"></div>
+            <div class="line solid"></div>
+            <div class="white-gap"></div>
+            <div class="yellow-gap">
+                <div class="line dashed"></div>
+            
+            </div>
+            <div class="line solid"></div>
+            <div class="white-gap"></div>
+        </div>
+    </div>
+    <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Adjust canvas size
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+
+    const pencilButton = document.getElementById('toggle-pencil');
+    const eraserButton = document.getElementById('toggle-eraser');
+    const onOffButton = document.getElementById('toggle-onoff');
+
+    let drawing = false;
+    let erasing = false;
+    let isOn = true;
+
+    // Pencil Button
+    pencilButton.addEventListener('click', () => {
+        if (isOn) {
+            erasing = false;
+            pencilButton.classList.add('active');
+            eraserButton.classList.remove('active');
+            canvas.style.cursor = 'url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\'><line x1=\'0\' y1=\'12\' x2=\'24\' y2=\'12\' stroke=\'black\' stroke-width=\'2\'/><line x1=\'12\' y1=\'0\' x2=\'12\' y2=\'24\' stroke=\'black\' stroke-width=\'2\'/></svg>") 12 12, auto'; // Bold crosshair
+        }
+    });
+
+    // Eraser Button
+    eraserButton.addEventListener('click', () => {
+        if (isOn) {
+            erasing = true;
+            eraserButton.classList.add('active');
+            pencilButton.classList.remove('active');
+            canvas.style.cursor = 'url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'24\'><rect width=\'12\' height=\'24\' fill=\'pink\'/></svg>") 6 12, auto'; // Pink rectangle cursor
+        }
+    });
+
+    // On/Off Button
+    onOffButton.addEventListener('click', () => {
+        isOn = !isOn;
+        if (isOn) {
+            onOffButton.textContent = '🔓';
+            pencilButton.disabled = false;
+            eraserButton.disabled = false;
+            addCanvasListeners();
+        } else {
+            onOffButton.textContent = '🔒';
+            pencilButton.disabled = true;
+            eraserButton.disabled = true;
+            pencilButton.classList.remove('active');
+            eraserButton.classList.remove('active');
+            canvas.style.cursor = 'default'; // Reset cursor to default
+            removeCanvasListeners();
+        }
+    });
+
+    // Drawing
+    
+
+    const startDrawing = (e) => {
+    if (!isOn) return;
+    drawing = true;
+    ctx.beginPath();
+    ctx.moveTo(e.offsetX, e.offsetY);
+};
+
+
+const stopDrawing = () => {
+    if (drawing) {
+        drawing = false;
+        ctx.closePath();
+    }
+};
+
+
+    
+const draw = (e) => {
+    if (!drawing || !isOn) return;
+
+    if (e.pressure === 0) {
+        stopDrawing();
+        return;
+    }
+
+    const rect = canvas.getBoundingClientRect(); // Get canvas position
+    const x = e.clientX - rect.left; // Normalize X
+    const y = e.clientY - rect.top;  // Normalize Y
+
+    if (erasing) {
+        ctx.clearRect(x - 6, y - 12, 12, 24);
+    } else {
+        const pressure = e.pressure > 0 ? e.pressure : 1; // Fallback to default pressure
+        ctx.lineWidth = 2.0 * e.pressure;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = '#000000';
+        ctx.lineTo(e.offsetX, e.offsetY);
+        ctx.stroke();
+    }
+};
+
+
+
+    // Eraser
+    const erase = (e) => {
+        ctx.clearRect(e.offsetX - 6, e.offsetY - 12, 12, 24); // Pink rectangle cursor size
+    };
+
+    const addCanvasListeners = () => {
+    canvas.addEventListener('pointerdown', startDrawing);
+    canvas.addEventListener('pointermove', draw);
+    canvas.addEventListener('pointerup', stopDrawing);
+    canvas.addEventListener('pointercancel', stopDrawing);
+};
+
+const removeCanvasListeners = () => {
+    canvas.removeEventListener('pointerdown', startDrawing);
+    canvas.removeEventListener('pointermove', draw);
+    canvas.removeEventListener('pointerup', stopDrawing);
+};
+
+
+    addCanvasListeners(); // Initialize
+
+    canvas.addEventListener('pointermove', (e) => {
+    console.log('Pressure:', e.pressure);
+});
+
+canvas.addEventListener('pointerdown', (e) => console.log('Pointer down:', e));
+canvas.addEventListener('pointerup', (e) => console.log('Pointer up:', e));
+canvas.addEventListener('pointermove', (e) => console.log('Pointer move pressure:', e.pressure));
+canvas.addEventListener('pointercancel', (e) => console.log('Pointer cancel:', e));
+
+console.log('Pointer position:', e.offsetX, e.offsetY);
+
+</script>
+
+</body>
+</html>
